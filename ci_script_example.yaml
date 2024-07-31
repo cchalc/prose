@@ -1,0 +1,20 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy-prose:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Create SSH key
+      run: echo "$SSH_KEY" > "$KEY_PATH" && chmod 600 "$KEY_PATH"
+      env:
+        KEY_PATH: ./key
+        SSH_KEY: ${{ secrets.CI_KEY }}
+    - name: Upload
+      run: rsync --rsh='ssh -o StrictHostKeyChecking=no -i ./key' *.md prose.sh:/
